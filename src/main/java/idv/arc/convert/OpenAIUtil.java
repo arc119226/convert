@@ -11,17 +11,31 @@ public class OpenAIUtil {
 
     private static final MediaType JSON = MediaType.get("application/json; charset=utf-8");
     private static final OkHttpClient client = new OkHttpClient.Builder()
-            .connectTimeout(60, TimeUnit.SECONDS)
-            .writeTimeout(60, TimeUnit.SECONDS)
-            .readTimeout(60, TimeUnit.SECONDS)
+            .callTimeout(3, TimeUnit.MINUTES)
+            .connectTimeout(3, TimeUnit.MINUTES)
+            .writeTimeout(3, TimeUnit.MINUTES)
+            .readTimeout(3, TimeUnit.MINUTES)
             .build();
     private static final Gson gson = new Gson();
+    public static Map<String, Object> list(String apiKey) {
+        Request request = new Request.Builder()
+                .url(PluginModel.listApi)
+                .get()
+                .addHeader("Authorization", "Bearer " + apiKey)
+                .build();
+        try (Response response = client.newCall(request).execute()) {
+            assert response.body() != null;
+            return gson.fromJson(response.body().string(), HashMap.class);
+        } catch (IOException e) {
+            return gson.fromJson("{\"error\":\""+e.getMessage()+"\"}", HashMap.class);
+        }
+    }
 
     public static Map<String, Object> complete(String prompt, String apiKey, String model) {
         String json = "{" +
                 "\"model\":"+gson.toJson(model)+"," +
                 "\"prompt\":"+gson.toJson(prompt)+"," +
-                "\"max_tokens\":3000," +
+                "\"max_tokens\":"+PluginModel.maxTokens+"," +
                 "\"temperature\":0," +
                 "\"top_p\": 1," +
                 "\"n\": 1" +
@@ -32,14 +46,14 @@ public class OpenAIUtil {
             json = "{" +
                     "\"model\":"+gson.toJson(model)+"," +
                     "\"messages\":[{\"role\":\"user\",\"content\":"+gson.toJson(prompt)+"}]," +
-                    "\"max_tokens\":3000," +
+                    "\"max_tokens\":"+PluginModel.maxTokens+"," +
                     "\"temperature\":0," +
                     "\"top_p\": 1," +
                     "\"n\": 1" +
                     "}";
         }
 
-        String result = post("https://api.openai.com/v1"+type+"/completions", json, apiKey);
+        String result = post(String.format(PluginModel.api,type), json, apiKey);
         try {
             return gson.fromJson(result, HashMap.class);
         } catch (Exception e) {

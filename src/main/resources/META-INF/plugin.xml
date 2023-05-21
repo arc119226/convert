@@ -25,10 +25,10 @@
     <extensions defaultExtensionNs="com.intellij">
     </extensions>
     <actions>
-        <action icon="AllIcons.Actions.Commit" id="MyPlugin.CopyToVariable" class="idv.arc.convert.SelectCodeAction" text="Select Code For Fast Generate Code">
+        <action icon="AllIcons.Actions.IntentionBulb" id="MyPlugin.CopyToVariable" class="idv.arc.convert.SelectCodeAction" text="Select Code For Fast Generate Code">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
-        <action icon="AllIcons.Actions.Edit" id="MyPlugin.PasteFromVariable" class="idv.arc.convert.GenerateCodeAction" text="ChatGPT Fast Generate Code">
+        <action icon="AllIcons.Actions.Lightning" id="MyPlugin.PasteFromVariable" class="idv.arc.convert.GenerateCodeAction" text="ChatGPT Fast Generate Code">
             <add-to-group group-id="ToolbarRunGroup" anchor="last"/>
         </action>
     </actions>
