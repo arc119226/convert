@@ -181,6 +181,7 @@ public class PluginView extends DialogWrapper {
             }finally {
                 listModelButton.setText("List");
                 listModelButton.setEnabled(true);
+                listModelButton.update(listModelButton.getGraphics());
             }
         }).start());
     }
@@ -263,10 +264,18 @@ public class PluginView extends DialogWrapper {
     protected void doOKAction() {
         if (doValidate() == null) {
             String text = resultArea.getText();
+            String selectedText = resultArea.getSelectedText();
+            String pastText;
+            if(resultArea.getSelectedText()!=null){
+                pastText = selectedText;
+            }else {
+                pastText = text;
+            }
+
             Document document = editor.getDocument();
             CaretModel caretModel = editor.getCaretModel();
             Project project = editor.getProject();
-            WriteCommandAction.runWriteCommandAction(project, () -> document.insertString(caretModel.getOffset(), text));
+            WriteCommandAction.runWriteCommandAction(project, () -> document.insertString(caretModel.getOffset(), pastText));
             updatePluginModel();
             super.doOKAction();
             close(DialogWrapper.OK_EXIT_CODE);
