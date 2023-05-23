@@ -19,22 +19,42 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
+import java.awt.event.ActionEvent;
+import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 
-import static idv.arc.convert.OpenAIUtil.complete;
+import static idv.arc.convert.OpenAIUtil.callModel;
 
 public class PluginView extends DialogWrapper {
-    private JPasswordField apiKeyArea;
+
+    private JPanel dialogPanel;
+    private JPanel eastPanel ;
+    private JPanel westPanel;
+    private JPanel northPanel;
+    private JPanel southPanel;
+    private JPanel centerPanel;
+
+    private JPanel generatePanel;
+    private JPanel lineWrapPanel;
+    private JPanel apiKeyPanel;
+    private JPanel modelPanel;
+    private JPanel settingPanel;
+
+    private JPasswordField apiKeyInput;
     private JButton listModelButton;
     private JBList<String> modelList;
-    private JBTextField tokenField;
-    private JBTextArea promptArea;
+    private JButton retrieveButton;
+    private JBTextField tokenInput;
+//    private JBTextField temperatureInput;
+//    private JBTextField topPInput;
+    private JBTextField nInput;
+    private JBTextArea promptTextArea;
     private JBTextArea codeArea;
     private JBTextArea resultArea;
-    private JButton convertButton;
+    private JButton runButton;
     private JBCheckBox lineWrapCheckBox;
     private final Editor editor;
 
@@ -48,41 +68,55 @@ public class PluginView extends DialogWrapper {
     protected JComponent createCenterPanel() {
         super.getOKAction().putValue(Action.NAME, "Insert Code");
         super.setTitle("ChatGPT Fast Generate Code");
-        JPanel dialogPanel = new JPanel(new BorderLayout());
-        JPanel eastPanel = new JPanel(new BorderLayout());
-        JPanel westPanel = new JPanel(new BorderLayout());
-        JPanel northPanel = new JPanel(new BorderLayout());
-        JPanel southPanel = new JPanel(new BorderLayout());
-        JPanel centerPanel = new JPanel(new BorderLayout());
 
-        JPanel generatePanel = new JPanel(new FlowLayout());
-        JPanel lineWrapPanel = new JPanel(new FlowLayout());
-        JPanel apiKeyPanel = new JPanel(new BorderLayout());
-        JPanel modelPanel = new JPanel(new BorderLayout());
-        JPanel tokenPanel = new JPanel(new BorderLayout());
+        dialogPanel = new JPanel(new BorderLayout());
+
+        eastPanel = new JPanel(new BorderLayout());
+        westPanel = new JPanel(new BorderLayout());
+        northPanel = new JPanel(new BorderLayout());
+        southPanel = new JPanel(new BorderLayout());
+        centerPanel = new JPanel(new BorderLayout());
+
+        generatePanel = new JPanel(new FlowLayout());
+        lineWrapPanel = new JPanel(new FlowLayout());
+
+        apiKeyPanel = new JPanel(new BorderLayout());
+        modelPanel = new JPanel(new BorderLayout());
+        settingPanel = new JPanel(new FlowLayout());
 
         Dimension buttonSize = new Dimension(110, 50);
-        convertButton = new JButton("Run");
-        convertButton.setPreferredSize(buttonSize);
-        convertButton.setMaximumSize(buttonSize);
+        runButton = new JButton("Run");
+        runButton.setPreferredSize(buttonSize);
+        runButton.setMaximumSize(buttonSize);
 
         lineWrapCheckBox = new JBCheckBox("Wrap");
         lineWrapCheckBox.setPreferredSize(buttonSize);
         lineWrapCheckBox.setMaximumSize(buttonSize);
 
-        apiKeyArea = new JPasswordField(PluginModel.apiKey,30);
-        apiKeyArea.setEditable(true);
+        listModelButton = new JButton("List");
+        listModelButton.setPreferredSize(buttonSize);
+        listModelButton.setMaximumSize(buttonSize);
+
+        retrieveButton = new JButton("Retrieve");
+        retrieveButton.setPreferredSize(buttonSize);
+        retrieveButton.setMaximumSize(buttonSize);
+
+        apiKeyInput = new JPasswordField(PluginModel.apiKey,30);
+        apiKeyInput.setEditable(true);
 
         modelList = new JBList<>(PluginModel.allModel);
 
-        tokenField = new JBTextField(PluginModel.maxTokens.toString(), 5);
+        tokenInput = new JBTextField(PluginModel.maxTokens.toString(), 5);
+//        temperatureInput = new JBTextField(PluginModel.temperature.toString(), 5);
+//        topPInput = new JBTextField(PluginModel.topP.toString(), 5);
+        nInput = new JBTextField(PluginModel.n.toString(), 5);
 
-        promptArea = new JBTextArea(PluginModel.prompt, 5, 30);
-        promptArea.setEditable(true);
-        promptArea.getCaret().setVisible(true);
-        promptArea.getCaret().setSelectionVisible(true);
-        promptArea.setLineWrap(true);
-        promptArea.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
+        promptTextArea = new JBTextArea(PluginModel.prompt, 5, 30);
+        promptTextArea.setEditable(true);
+        promptTextArea.getCaret().setVisible(true);
+        promptTextArea.getCaret().setSelectionVisible(true);
+        promptTextArea.setLineWrap(true);
+        promptTextArea.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
         codeArea = new JBTextArea(PluginModel.originCode, 20, 60);
         codeArea.setEditable(true);
@@ -96,28 +130,35 @@ public class PluginView extends DialogWrapper {
         resultArea.getCaret().setSelectionVisible(true);
         resultArea.setCursor(Cursor.getPredefinedCursor(Cursor.TEXT_CURSOR));
 
-        generatePanel.add(convertButton);
+        generatePanel.add(runButton);
         lineWrapPanel.add(lineWrapCheckBox);
 
         centerPanel.add(generatePanel, BorderLayout.NORTH);
         centerPanel.add(lineWrapPanel, BorderLayout.CENTER);
 
         apiKeyPanel.add(new JLabel("API Key :"), BorderLayout.WEST);
-        apiKeyPanel.add(new JScrollPane(apiKeyArea), BorderLayout.CENTER);
-        apiKeyPanel.add(listModelButton = new JButton("List"), BorderLayout.EAST);
+        apiKeyPanel.add(new JScrollPane(apiKeyInput), BorderLayout.CENTER);
+        apiKeyPanel.add(listModelButton, BorderLayout.EAST);
 
         modelPanel.add(new JLabel("ALL Models    :"), BorderLayout.WEST);
         modelPanel.add(new JScrollPane(modelList), BorderLayout.CENTER);
+        modelList.add(retrieveButton, BorderLayout.EAST);
 
-        tokenPanel.add(new JLabel("Max Tokens   :"), BorderLayout.WEST);
-        tokenPanel.add(tokenField, BorderLayout.CENTER);
+        settingPanel.add(new JLabel("Max Tokens   :"));
+        settingPanel.add(tokenInput);
+//        settingPanel.add(new JLabel("Temperature    :"));
+//        settingPanel.add(temperatureInput);
+//        settingPanel.add(new JLabel("Top P    :"));
+//        settingPanel.add(topPInput);
+        settingPanel.add(new JLabel("N    :"));
+        settingPanel.add(nInput);
 
         northPanel.add(apiKeyPanel, BorderLayout.NORTH);
         northPanel.add(modelPanel, BorderLayout.CENTER);
-        northPanel.add(tokenPanel, BorderLayout.SOUTH);
+        northPanel.add(settingPanel, BorderLayout.SOUTH);
 
         southPanel.add(new JLabel("Prompt   :"), BorderLayout.NORTH);
-        southPanel.add(new JScrollPane(promptArea), BorderLayout.CENTER);
+        southPanel.add(new JScrollPane(promptTextArea), BorderLayout.CENTER);
 
         westPanel.add(new JLabel("Code  :"), BorderLayout.NORTH);
         westPanel.add(new JScrollPane(codeArea), BorderLayout.CENTER);
@@ -130,6 +171,13 @@ public class PluginView extends DialogWrapper {
         dialogPanel.add(westPanel, BorderLayout.WEST);
         dialogPanel.add(eastPanel, BorderLayout.EAST);
         dialogPanel.add(centerPanel, BorderLayout.CENTER);
+
+        retrieveButton.addActionListener(new ActionListener() {
+            @Override
+            public void actionPerformed(ActionEvent e) {
+
+            }
+        });
 
         registerTokenFieldInputRule();
         registerListModelEvent();
@@ -144,7 +192,56 @@ public class PluginView extends DialogWrapper {
     }
 
     private void registerTokenFieldInputRule() {
-        ((AbstractDocument) tokenField.getDocument()).setDocumentFilter(new DocumentFilter() {
+        ((AbstractDocument) tokenInput.getDocument()).setDocumentFilter(new DocumentFilter() {
+            @Override
+            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+                if (string.matches("\\d*")) {
+                    super.insertString(fb, offset, string, attr);
+                }
+            }
+
+            @Override
+            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+                if (text.matches("\\d*")) {
+                    super.replace(fb, offset, length, text, attrs);
+                }
+            }
+        });
+//        ((AbstractDocument) temperatureInput.getDocument()).setDocumentFilter(new DocumentFilter() {
+//            @Override
+//            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+//                //matchs 0.0~2.0
+//                if(string.matches("^[0-1](\\.\\d+)?$") || string.matches("^2(\\.0)?$")){
+//                    super.insertString(fb, offset, string, attr);
+//                }
+//            }
+//
+//            @Override
+//            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+//                //matchs 0.0~2.0
+//                if(text.matches("^[0-1](\\.\\d+)?$") || text.matches("^2(\\.0)?$")){
+//                    super.replace(fb, offset, length, text, attrs);
+//                }
+//            }
+//        });
+//        ((AbstractDocument) topPInput.getDocument()).setDocumentFilter(new DocumentFilter() {
+//            @Override
+//            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
+//                //matchs 0.0~1.0
+//                if(string.matches("^[0-1](\\.\\d+)?$")){
+//                    super.insertString(fb, offset, string, attr);
+//                }
+//            }
+//
+//            @Override
+//            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
+//                //matchs 0.0~1.0
+//                if(text.matches("^[0-1](\\.\\d+)?$")){
+//                    super.replace(fb, offset, length, text, attrs);
+//                }
+//            }
+//        });
+        ((AbstractDocument) nInput.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override
             public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
                 if (string.matches("\\d*")) {
@@ -168,7 +265,7 @@ public class PluginView extends DialogWrapper {
                 listModelButton.update(listModelButton.getGraphics());
                 listModelButton.setEnabled(false);
 
-                PluginModel.apiKey = new String(apiKeyArea.getPassword());
+                PluginModel.apiKey = new String(apiKeyInput.getPassword());
                 Map<String,Object> results = OpenAIUtil.list(PluginModel.apiKey);
                 List<Map<String,Object>> dataList = (List<Map<String, Object>>) results.get("data");
                 PluginModel.allModel = dataList.stream().map(data -> (String) data.get("id")).collect(Collectors.toList());
@@ -187,16 +284,16 @@ public class PluginView extends DialogWrapper {
     }
 
     private void registerGenerateCodeEvent() {
-        convertButton.addActionListener(e -> new Thread(() -> {
+        runButton.addActionListener(e -> new Thread(() -> {
             try{
                 resultArea.setText("");
-                convertButton.setText("Run...");
-                convertButton.update(convertButton.getGraphics());
-                convertButton.setEnabled(false);
+                runButton.setText("Run...");
+                runButton.update(runButton.getGraphics());
+                runButton.setEnabled(false);
 
                 updatePluginModel();
 
-                Map<String,Object> result = complete(PluginModel.prompt+"\n"+PluginModel.originCode, PluginModel.apiKey, PluginModel.currentModel);
+                Map<String,Object> result = callModel(PluginModel.prompt,PluginModel.originCode, PluginModel.apiKey, PluginModel.currentModel);
                 if(result.get("error")!=null){
                     PluginModel.resultCode = result.get("error").toString();
                     resultArea.append(PluginModel.resultCode);
@@ -204,12 +301,27 @@ public class PluginView extends DialogWrapper {
                 }else{
                     if(result.get("choices")!=null){
                         List<Map<String,Object>> choices = (List<Map<String,Object>>) result.get("choices");
+
                         if(null!=choices){
-                            if (PluginModel.currentModel.contains("gpt")){
-                                Map<String,Object> message = (Map<String,Object>)choices.get(0).get("message");
-                                PluginModel.resultCode = message.get("content").toString().trim();
-                            }else {
+                            if(PluginModel.completionsModelList.contains(PluginModel.currentModel)){
+                                choices.forEach(choice -> {
+                                    Map<String,Object> message = choice;
+                                    PluginModel.resultCode += message.get("text").toString().trim();
+                                    PluginModel.resultCode += "\n";
+                                });
                                 PluginModel.resultCode = choices.get(0).get("text").toString().trim();
+                            }else if(PluginModel.chatModelList.contains(PluginModel.currentModel)){
+                                choices.forEach(choice -> {
+                                    Map<String,Object> message = (Map<String,Object>)choice.get("message");
+                                    PluginModel.resultCode += message.get("content").toString().trim();
+                                    PluginModel.resultCode += "\n";
+                                });
+                            }else if(PluginModel.etitsModelList.contains(PluginModel.currentModel)){
+                                choices.forEach(choice -> {
+                                    Map<String,Object> message = choice;
+                                    PluginModel.resultCode += message.get("text").toString().trim();
+                                    PluginModel.resultCode += "\n";
+                                });
                             }
                         }else{
                             PluginModel.resultCode = "text is null";
@@ -227,9 +339,9 @@ public class PluginView extends DialogWrapper {
                 resultArea.append(PluginModel.currentModel+"-"+PluginModel.resultCode);
                 resultArea.update(resultArea.getGraphics());
             }finally {
-                convertButton.setText("Run");
-                convertButton.setEnabled(true);
-                convertButton.update(convertButton.getGraphics());
+                runButton.setText("Run");
+                runButton.setEnabled(true);
+                runButton.update(runButton.getGraphics());
             }
         }).start());
     }
@@ -283,11 +395,14 @@ public class PluginView extends DialogWrapper {
     }
 
     private void updatePluginModel() {
-        PluginModel.apiKey = new String(apiKeyArea.getPassword());
-        PluginModel.prompt = promptArea.getText();
+        PluginModel.apiKey = new String(apiKeyInput.getPassword());
+        PluginModel.prompt = promptTextArea.getText();
         PluginModel.currentModel = modelList.getSelectedValue();
         PluginModel.isWrap = lineWrapCheckBox.isSelected();
-        PluginModel.maxTokens = Integer.parseInt(tokenField.getText());
+        PluginModel.maxTokens = Integer.parseInt(tokenInput.getText());
+//        PluginModel.temperature = Double.parseDouble(temperatureInput.getText());
+//        PluginModel.topP = Integer.parseInt(topPInput.getText());
+        PluginModel.n = Integer.parseInt(nInput.getText());
         PluginModel.originCode = codeArea.getText();
         PluginModel.resultCode = resultArea.getText();
     }

@@ -31,34 +31,60 @@ public class OpenAIUtil {
         }
     }
 
-    public static Map<String, Object> complete(String prompt, String apiKey, String model) {
-        String json = "{" +
-                "\"model\":"+gson.toJson(model)+"," +
-                "\"prompt\":"+gson.toJson(prompt)+"," +
-                "\"max_tokens\":"+PluginModel.maxTokens+"," +
-                "\"temperature\":0," +
-                "\"top_p\": 1," +
-                "\"n\": 1" +
-                "}";
-        String type = "";
-        if(model.contains("gpt")){
-            type="/chat";
+    public static Map<String, Object> callModel(String prompt,String originCode, String apiKey, String model) {
+        if(prompt==null||prompt.trim().isEmpty()){
+            return new HashMap<>() {{
+                put("error", "prompt is empty");
+            }};
+        }
+        if(originCode==null||originCode.trim().isEmpty()){
+            return new HashMap<>() {{
+                put("error", "originCode is empty");
+            }};
+        }
+        String json = "";
+        String result = "";
+        if(PluginModel.chatModelList.contains(model)){
             json = "{" +
                     "\"model\":"+gson.toJson(model)+"," +
-                    "\"messages\":[{\"role\":\"user\",\"content\":"+gson.toJson(prompt)+"}]," +
+                    "\"messages\":[{\"role\":\"user\",\"content\":"+gson.toJson(prompt+"\n"+originCode)+"}]," +
                     "\"max_tokens\":"+PluginModel.maxTokens+"," +
-                    "\"temperature\":0," +
-                    "\"top_p\": 1," +
-                    "\"n\": 1" +
+                    "\"temperature\":"+PluginModel.temperature+"," +
+                    "\"top_p\":"+PluginModel.topP+"," +
+                    "\"n\":"+PluginModel.n+
                     "}";
+            result = post(PluginModel.chat,json, apiKey);
+        }else if(PluginModel.completionsModelList.contains(model)){
+            json = "{" +
+                    "\"model\":"+gson.toJson(model)+"," +
+                    "\"prompt\":"+gson.toJson(prompt+"\n"+originCode)+"," +
+                    "\"max_tokens\":"+PluginModel.maxTokens+"," +
+                    "\"temperature\":"+PluginModel.temperature+"," +
+                    "\"top_p\":"+PluginModel.topP+"," +
+                    "\"n\":" +PluginModel.n+
+                    "}";
+            result = post(PluginModel.completions,json, apiKey);
+        }else if(PluginModel.etitsModelList.contains(model)){
+            json ="{"+
+                    "\"model\":"+gson.toJson(model)+"," +
+                    "\"input\":"+ gson.toJson(originCode)+"," +
+                    "\"instruction\":"+gson.toJson(prompt)+"," +
+                    "\"temperature\":"+PluginModel.temperature+"," +
+                    "\"top_p\":"+PluginModel.topP+"," +
+                    "\"n\":" +PluginModel.n+
+                "}";
+            result = post(PluginModel.edits,json, apiKey);
+        }else{
+            return new HashMap<>() {{
+                put("error", model+" not support");
+            }};
         }
-
-        String result = post(String.format(PluginModel.api,type), json, apiKey);
         try {
             return gson.fromJson(result, HashMap.class);
         } catch (Exception e) {
+            String finalResult = result;
             return new HashMap<>() {{
-                put("error", e.getMessage() + " " + result);
+                put("error", e.getMessage() + " " + finalResult);
             }};
         }
     }
