@@ -45,17 +45,17 @@ public class PluginView extends DialogWrapper {
 
     private JPasswordField apiKeyInput;
     private JButton listModelButton;
-    private JBList<String> modelList;
+    private JList<String> modelList;
     private JButton retrieveButton;
-    private JBTextField tokenInput;
+    private JTextField tokenInput;
 //    private JBTextField temperatureInput;
 //    private JBTextField topPInput;
-    private JBTextField nInput;
-    private JBTextArea promptTextArea;
-    private JBTextArea codeArea;
-    private JBTextArea resultArea;
+    private JTextField nInput;
+    private JTextArea promptTextArea;
+    private JTextArea codeArea;
+    private JTextArea resultArea;
     private JButton runButton;
-    private JBCheckBox lineWrapCheckBox;
+    private JCheckBox lineWrapCheckBox;
     private final Editor editor;
 
     protected PluginView(@Nullable Project project, Editor editor) {

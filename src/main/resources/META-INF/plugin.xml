@@ -12,10 +12,6 @@
          Guidelines: https://plugins.jetbrains.com/docs/marketplace/plugin-overview-page.html#plugin-description -->
     <description><![CDATA[
     Select a piece of code in the editor, send it to the OpenAI completions API with your custom prompt, generate the results, and quickly insert them into the position of the cursor in the editor.<br>
-    <em></em>
-    <img src="https://arc.idv.tw/convert/toolbar.png" alt="Preview" width="100%"/>
-    <br>
-    <image src="https://arc.idv.tw/convert/dialog.png" alt="Preview" width="60%"/>
   ]]></description>
     <!-- Product and plugin compatibility requirements.
          Read more: https://plugins.jetbrains.com/docs/intellij/plugin-compatibility.html -->

@@ -4,7 +4,7 @@ plugins {
 }
 
 group = "idv.arc"
-version = "1.0"
+version = "1.0.1"
 
 repositories {
     mavenCentral()
@@ -34,7 +34,7 @@ tasks {
 
     patchPluginXml {
         sinceBuild.set("221")
-        untilBuild.set("231.*")
+        untilBuild.set("233.*")
     }
 
     signPlugin {
