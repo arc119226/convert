@@ -11,7 +11,7 @@ public class PluginModel {
     public static final String edits = "https://api.openai.com/v1/edits";
     public static String apiKey;
     public static String currentModel ="text-davinci-003";
-    public static List<String> allModel = Arrays.asList(currentModel);
+    public static List<String> allModel = List.of(currentModel);
     public static String prompt;
     public static String originCode="";
     public static String resultCode="";

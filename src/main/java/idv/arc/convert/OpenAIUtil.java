@@ -42,8 +42,8 @@ public class OpenAIUtil {
                 put("error", "originCode is empty");
             }};
         }
-        String json = "";
-        String result = "";
+        String json;
+        String result;
         if(PluginModel.chatModelList.contains(model)){
             json = "{" +
                     "\"model\":"+gson.toJson(model)+"," +

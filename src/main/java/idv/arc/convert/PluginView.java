@@ -19,8 +19,6 @@ import javax.swing.text.AttributeSet;
 import javax.swing.text.BadLocationException;
 import javax.swing.text.DocumentFilter;
 import java.awt.*;
-import java.awt.event.ActionEvent;
-import java.awt.event.ActionListener;
 import java.awt.event.ItemEvent;
 import java.util.List;
 import java.util.Map;
@@ -30,26 +28,10 @@ import static idv.arc.convert.OpenAIUtil.callModel;
 
 public class PluginView extends DialogWrapper {
 
-    private JPanel dialogPanel;
-    private JPanel eastPanel ;
-    private JPanel westPanel;
-    private JPanel northPanel;
-    private JPanel southPanel;
-    private JPanel centerPanel;
-
-    private JPanel generatePanel;
-    private JPanel lineWrapPanel;
-    private JPanel apiKeyPanel;
-    private JPanel modelPanel;
-    private JPanel settingPanel;
-
     private JPasswordField apiKeyInput;
     private JButton listModelButton;
     private JList<String> modelList;
-    private JButton retrieveButton;
     private JTextField tokenInput;
-//    private JBTextField temperatureInput;
-//    private JBTextField topPInput;
     private JTextField nInput;
     private JTextArea promptTextArea;
     private JTextArea codeArea;
@@ -69,20 +51,20 @@ public class PluginView extends DialogWrapper {
         super.getOKAction().putValue(Action.NAME, "Insert Code");
         super.setTitle("ChatGPT Fast Generate Code");
 
-        dialogPanel = new JPanel(new BorderLayout());
+        JPanel dialogPanel = new JPanel(new BorderLayout());
 
-        eastPanel = new JPanel(new BorderLayout());
-        westPanel = new JPanel(new BorderLayout());
-        northPanel = new JPanel(new BorderLayout());
-        southPanel = new JPanel(new BorderLayout());
-        centerPanel = new JPanel(new BorderLayout());
+        JPanel eastPanel = new JPanel(new BorderLayout());
+        JPanel westPanel = new JPanel(new BorderLayout());
+        JPanel northPanel = new JPanel(new BorderLayout());
+        JPanel southPanel = new JPanel(new BorderLayout());
+        JPanel centerPanel = new JPanel(new BorderLayout());
 
-        generatePanel = new JPanel(new FlowLayout());
-        lineWrapPanel = new JPanel(new FlowLayout());
+        JPanel generatePanel = new JPanel(new FlowLayout());
+        JPanel lineWrapPanel = new JPanel(new FlowLayout());
 
-        apiKeyPanel = new JPanel(new BorderLayout());
-        modelPanel = new JPanel(new BorderLayout());
-        settingPanel = new JPanel(new FlowLayout());
+        JPanel apiKeyPanel = new JPanel(new BorderLayout());
+        JPanel modelPanel = new JPanel(new BorderLayout());
+        JPanel settingPanel = new JPanel(new FlowLayout());
 
         Dimension buttonSize = new Dimension(110, 50);
         runButton = new JButton("Run");
@@ -97,7 +79,7 @@ public class PluginView extends DialogWrapper {
         listModelButton.setPreferredSize(buttonSize);
         listModelButton.setMaximumSize(buttonSize);
 
-        retrieveButton = new JButton("Retrieve");
+        JButton retrieveButton = new JButton("Retrieve");
         retrieveButton.setPreferredSize(buttonSize);
         retrieveButton.setMaximumSize(buttonSize);
 
@@ -107,8 +89,6 @@ public class PluginView extends DialogWrapper {
         modelList = new JBList<>(PluginModel.allModel);
 
         tokenInput = new JBTextField(PluginModel.maxTokens.toString(), 5);
-//        temperatureInput = new JBTextField(PluginModel.temperature.toString(), 5);
-//        topPInput = new JBTextField(PluginModel.topP.toString(), 5);
         nInput = new JBTextField(PluginModel.n.toString(), 5);
 
         promptTextArea = new JBTextArea(PluginModel.prompt, 5, 30);
@@ -146,10 +126,6 @@ public class PluginView extends DialogWrapper {
 
         settingPanel.add(new JLabel("Max Tokens   :"));
         settingPanel.add(tokenInput);
-//        settingPanel.add(new JLabel("Temperature    :"));
-//        settingPanel.add(temperatureInput);
-//        settingPanel.add(new JLabel("Top P    :"));
-//        settingPanel.add(topPInput);
         settingPanel.add(new JLabel("N    :"));
         settingPanel.add(nInput);
 
@@ -172,11 +148,8 @@ public class PluginView extends DialogWrapper {
         dialogPanel.add(eastPanel, BorderLayout.EAST);
         dialogPanel.add(centerPanel, BorderLayout.CENTER);
 
-        retrieveButton.addActionListener(new ActionListener() {
-            @Override
-            public void actionPerformed(ActionEvent e) {
+        retrieveButton.addActionListener(e -> {
 
-            }
         });
 
         registerTokenFieldInputRule();
@@ -207,40 +180,6 @@ public class PluginView extends DialogWrapper {
                 }
             }
         });
-//        ((AbstractDocument) temperatureInput.getDocument()).setDocumentFilter(new DocumentFilter() {
-//            @Override
-//            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-//                //matchs 0.0~2.0
-//                if(string.matches("^[0-1](\\.\\d+)?$") || string.matches("^2(\\.0)?$")){
-//                    super.insertString(fb, offset, string, attr);
-//                }
-//            }
-//
-//            @Override
-//            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-//                //matchs 0.0~2.0
-//                if(text.matches("^[0-1](\\.\\d+)?$") || text.matches("^2(\\.0)?$")){
-//                    super.replace(fb, offset, length, text, attrs);
-//                }
-//            }
-//        });
-//        ((AbstractDocument) topPInput.getDocument()).setDocumentFilter(new DocumentFilter() {
-//            @Override
-//            public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
-//                //matchs 0.0~1.0
-//                if(string.matches("^[0-1](\\.\\d+)?$")){
-//                    super.insertString(fb, offset, string, attr);
-//                }
-//            }
-//
-//            @Override
-//            public void replace(FilterBypass fb, int offset, int length, String text, AttributeSet attrs) throws BadLocationException {
-//                //matchs 0.0~1.0
-//                if(text.matches("^[0-1](\\.\\d+)?$")){
-//                    super.replace(fb, offset, length, text, attrs);
-//                }
-//            }
-//        });
         ((AbstractDocument) nInput.getDocument()).setDocumentFilter(new DocumentFilter() {
             @Override
             public void insertString(FilterBypass fb, int offset, String string, AttributeSet attr) throws BadLocationException {
@@ -305,8 +244,7 @@ public class PluginView extends DialogWrapper {
                         if(null!=choices){
                             if(PluginModel.completionsModelList.contains(PluginModel.currentModel)){
                                 choices.forEach(choice -> {
-                                    Map<String,Object> message = choice;
-                                    PluginModel.resultCode += message.get("text").toString().trim();
+                                    PluginModel.resultCode += choice.get("text").toString().trim();
                                     PluginModel.resultCode += "\n";
                                 });
                                 PluginModel.resultCode = choices.get(0).get("text").toString().trim();
@@ -318,8 +256,7 @@ public class PluginView extends DialogWrapper {
                                 });
                             }else if(PluginModel.etitsModelList.contains(PluginModel.currentModel)){
                                 choices.forEach(choice -> {
-                                    Map<String,Object> message = choice;
-                                    PluginModel.resultCode += message.get("text").toString().trim();
+                                    PluginModel.resultCode += choice.get("text").toString().trim();
                                     PluginModel.resultCode += "\n";
                                 });
                             }
@@ -400,8 +337,6 @@ public class PluginView extends DialogWrapper {
         PluginModel.currentModel = modelList.getSelectedValue();
         PluginModel.isWrap = lineWrapCheckBox.isSelected();
         PluginModel.maxTokens = Integer.parseInt(tokenInput.getText());
-//        PluginModel.temperature = Double.parseDouble(temperatureInput.getText());
-//        PluginModel.topP = Integer.parseInt(topPInput.getText());
         PluginModel.n = Integer.parseInt(nInput.getText());
         PluginModel.originCode = codeArea.getText();
         PluginModel.resultCode = resultArea.getText();
