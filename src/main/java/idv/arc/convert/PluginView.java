@@ -196,7 +196,6 @@ public class PluginView extends DialogWrapper {
             }
         });
     }
-
     private void registerListModelEvent() {
         listModelButton.addActionListener(e -> new Thread(() -> {
             try{

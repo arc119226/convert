@@ -82,9 +82,8 @@ public class OpenAIUtil {
         try {
             return gson.fromJson(result, HashMap.class);
         } catch (Exception e) {
-            String finalResult = result;
             return new HashMap<>() {{
-                put("error", e.getMessage() + " " + finalResult);
+                put("error", e.getMessage() + " " + result);
             }};
         }
     }
